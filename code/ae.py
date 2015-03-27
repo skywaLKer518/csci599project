@@ -19,13 +19,13 @@ from mlp import HiddenLayer
 class AutoEncoder(object):
 	""" AutoEncoder to do dimension reduction
 	"""
-	def __init__(self,input,numpy_rng,theano_rng=None, n_ins=784,
-			hidden_layers_sizes=[300,30,300,784], n_outs=784):
+	def __init__(self,input,numpy_rng,rbm_layers=None,n_layers=None,theano_rng=None, n_ins=784, n_outs=784):
 		self.hidden_layers = []
 		self.params = []
-		self.n_layers = len(hidden_layers_sizes)
-		assert self.n_layers > 0
+		self.n_layers = n_layers * 2
 		
+		assert self.n_layers > 0
+		self.rbm_layers = rbm_layers # for debug...
 		if not theano_rng:
 			theano_rng = RandomStreams(numpy_rng.randint(2 **30))
 		# allocate symbolic variables for the data
@@ -38,8 +38,48 @@ class AutoEncoder(object):
 			# construct mlp layers
 			if i == 0:
 				input_size = n_ins
+				output_size = self.rbm_layers[0].n_hidden
+				input_W = theano.shared(
+						value=self.rbm_layers[0].W.get_value(),
+						name='W',
+						borrow=True
+				)
+				input_b = theano.shared(
+						value=self.rbm_layers[0].hbias.get_value(),
+						name='b',
+						borrow=True
+				)
 			else:
-				input_size = hidden_layers_sizes[i - 1];
+				if i + 1 <= n_layers:
+					input_size = self.rbm_layers[i].n_visible
+					output_size = self.rbm_layers[i].n_hidden
+					input_W = theano.shared(
+						value=self.rbm_layers[i].W.get_value(),
+						name='W',
+						borrow=True
+					)
+					input_b = theano.shared(
+						value=self.rbm_layers[i].hbias.get_value(),
+						name='b',
+						borrow=True
+					)
+				else:
+					i_ind = self.n_layers-1-i
+					input_size = self.rbm_layers[i_ind].n_hidden
+					output_size = self.rbm_layers[i_ind].n_visible
+					input_W = theano.shared(
+						value=self.rbm_layers[i_ind].W.get_value().T,
+						name='W',
+						borrow=True
+					)
+					input_b = theano.shared(
+						value=self.rbm_layers[i_ind].vbias.get_value(),
+						name='b',
+						borrow=True
+					)
+
+			print ('input size for %i layer: %i'%(i, input_size))
+			print ('output size for %i layer: %i'%(i,output_size))
 			if i == 0:
 				layer_input = self.x
 			else:
@@ -48,12 +88,22 @@ class AutoEncoder(object):
 			hidden_layer = HiddenLayer(rng=numpy_rng,
 									input=layer_input,
 									n_in=input_size,
-									n_out=hidden_layers_sizes[i],
+									n_out=output_size,
+									W=input_W,
+									b=input_b,
 									activation=T.nnet.sigmoid)
 			self.hidden_layers.append(hidden_layer)
 
 			self.params.extend(hidden_layer.params)
-		self.x_rec = self.hidden_layers[-1].output		
+	
+		self.x_rec = self.hidden_layers[-1].output	
+	def encode(self,x_in):
+		if x_in is None:
+			x_in = self.x
+		out = x_in
+		for i in xrange(self.n_layers/2):
+			out = T.nnet.sigmoid(T.dot(out,self.hidden_layers[i].W)+self.hidden_layers[i].b)
+		return out
 	def get_rec_cost(self,x_rec):
 		#print T.mean(((self.x-x_rec)**2)).shape.eval()
 		return T.mean(((self.x-x_rec)**2))
@@ -123,7 +173,7 @@ class AutoEncoder(object):
 
 		return train_fn, valid_score, test_score
 
-def go(finetune_lr=0.1,momentum=0.5,training_epochs=10,dataset='mnist.pkl.gz',batch_size=10):
+def go(finetune_lr=0.1,momentum=0.5,training_epochs=1,dataset='mnist.pkl.gz',batch_size=10):
 	"""
 	Take pre-trained models as input. Fold the network and fine-tune weights.
 	:type finetune_lr: float
@@ -156,7 +206,9 @@ def go(finetune_lr=0.1,momentum=0.5,training_epochs=10,dataset='mnist.pkl.gz',ba
 	f = file('model.save','rb')
 	s_rbm = cPickle.load(f)
 	f.close()
-	bb = AutoEncoder(None, numpy_rng)
+	s_rbm.rbm_layers
+	n_layers_rbm = s_rbm.n_layers
+	bb = AutoEncoder(None, numpy_rng,s_rbm.rbm_layers,n_layers_rbm)
 	#return bb
 
 	print 'getting the fine-tuning functions'
@@ -234,6 +286,6 @@ def go(finetune_lr=0.1,momentum=0.5,training_epochs=10,dataset='mnist.pkl.gz',ba
 			if patience <= iter:
 				done_looping = True
 				break
-
+	return bb
 if __name__=='__main__':
 	go()
