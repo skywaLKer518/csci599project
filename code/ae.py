@@ -19,7 +19,7 @@ from mlp import HiddenLayer
 class AutoEncoder(object):
 	""" AutoEncoder to do dimension reduction
 	"""
-	def __init__(self,input,numpy_rng,rbm_layers=None,n_layers=None,theano_rng=None, n_ins=784, n_outs=784):
+	def __init__(self,input,numpy_rng,rbm_layers=None,n_layers=None,theano_rng=None, n_ins=3136, n_outs=3136):
 		self.hidden_layers = []
 		self.params = []
 		self.n_layers = n_layers * 2
@@ -203,7 +203,7 @@ def go(finetune_lr=0.1,momentum=0.5,training_epochs=1,dataset='mnist.pkl.gz',bat
 	
 	# load trained model
 	print 'loading the model'
-	f = file('model.save','rb')
+	f = file('model2.save','rb')
 	s_rbm = cPickle.load(f)
 	f.close()
 	s_rbm.rbm_layers
