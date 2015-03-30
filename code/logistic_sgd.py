@@ -209,6 +209,7 @@ def load_data(dataset):
             "data",
             dataset
         )
+        print(new_path)
         if os.path.isfile(new_path) or data_file == 'mnist.pkl.gz':
             dataset = new_path
 

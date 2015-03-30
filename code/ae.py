@@ -173,7 +173,7 @@ class AutoEncoder(object):
 
 		return train_fn, valid_score, test_score
 
-def go(finetune_lr=0.1,momentum=0.5,training_epochs=1,dataset='mnist.pkl.gz',batch_size=10):
+def test_autoencoder(finetune_lr=0.1,momentum=0.5,training_epochs=1,dataset='mnist.pkl.gz',batch_size=10):
 	"""
 	Take pre-trained models as input. Fold the network and fine-tune weights.
 	:type finetune_lr: float
@@ -288,4 +288,4 @@ def go(finetune_lr=0.1,momentum=0.5,training_epochs=1,dataset='mnist.pkl.gz',bat
 				break
 	return bb
 if __name__=='__main__':
-	go()
+	test_autoencoder()
