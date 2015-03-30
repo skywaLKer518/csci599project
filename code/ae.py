@@ -180,7 +180,7 @@ class AutoEncoder(object):
 
 		return train_fn, valid_score, test_score
 
-def test_autoencoder(finetune_lr=0.1,momentum=0.5,training_epochs=1,dataset='mnist.pkl.gz',batch_size=10):
+def test_autoencoder(finetune_lr=0.01,momentum=0.5,training_epochs=30,dataset='grayscale.pkl.gz',batch_size=10,pretrain='gray_pre.save'):
 	"""
 	Take pre-trained models as input. Fold the network and fine-tune weights.
 	:type finetune_lr: float
@@ -210,7 +210,7 @@ def test_autoencoder(finetune_lr=0.1,momentum=0.5,training_epochs=1,dataset='mni
 	
 	# load trained model
 	print 'loading the model'
-	f = file('model2.save','rb')
+	f = file(pretrain,'rb')
 	s_rbm = cPickle.load(f)
 	f.close()
 	s_rbm.rbm_layers
