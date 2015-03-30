@@ -278,7 +278,7 @@ class DBN(object):
 
 
 def test_DBN(finetune_lr=0.1, pretraining_epochs=5,
-             pretrain_lr=0.01, k=1, training_epochs=1,
+             pretrain_lr=0.001, k=1, training_epochs=10,
              dataset='grayscale.pkl.gz', batch_size=10):
     """
     Demonstrates how to train and test a Deep Belief Network.
@@ -314,9 +314,9 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=5,
     numpy_rng = numpy.random.RandomState(123)
     print '... building the model'
     # construct the Deep Belief Network
-    dbn = DBN(numpy_rng=numpy_rng, n_ins=28 * 28,
-              hidden_layers_sizes=[500, 250, 30],
-              n_outs=10)
+    dbn = DBN(numpy_rng=numpy_rng, n_ins=56*56,
+              hidden_layers_sizes=[1000, 200, 50],
+              n_outs=4)
 
     # start-snippet-2
     #########################
@@ -343,7 +343,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=5,
 
     end_time = time.clock()
     # end-snippet-2
-    ff = file('model2.save','wb')
+    ff = file('gray_pre.save','wb')
     cPickle.dump(dbn,ff,protocol=cPickle.HIGHEST_PROTOCOL)
     ff.close
     print >> sys.stderr, ('The pretraining code for file ' +
