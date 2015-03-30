@@ -104,6 +104,13 @@ class AutoEncoder(object):
 		for i in xrange(self.n_layers/2):
 			out = T.nnet.sigmoid(T.dot(out,self.hidden_layers[i].W)+self.hidden_layers[i].b)
 		return out
+	def reconstruct(self,x_in):
+		if x_in is None:
+			x_in = self.x
+		out = x_in
+		for i in xrange(self.n_layers):
+			out = T.nnet.sigmoid(T.dot(out,self.hidden_layers[i].W)+self.hidden_layers[i].b)
+		return out
 	def get_rec_cost(self,x_rec):
 		#print T.mean(((self.x-x_rec)**2)).shape.eval()
 		return T.mean(((self.x-x_rec)**2))
