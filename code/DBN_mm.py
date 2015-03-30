@@ -277,9 +277,9 @@ class DBN(object):
         return train_fn, valid_score, test_score
 
 
-def test_DBN(finetune_lr=0.1, pretraining_epochs=5,
-             pretrain_lr=0.001, k=1, training_epochs=10,
-             dataset='grayscale.pkl.gz', batch_size=10):
+def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
+             pretrain_lr=0.001, k=1, training_epochs=1,
+             dataset='grayscale.pkl.gz', batch_size=10,hidden_layers_sizes=[1000,200,50],pretrain_model='gray_pre1.save'):
     """
     Demonstrates how to train and test a Deep Belief Network.
 
@@ -315,7 +315,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=5,
     print '... building the model'
     # construct the Deep Belief Network
     dbn = DBN(numpy_rng=numpy_rng, n_ins=56*56,
-              hidden_layers_sizes=[1000, 200, 50],
+              hidden_layers_sizes=hidden_layers_sizes,
               n_outs=4)
 
     # start-snippet-2
@@ -343,7 +343,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=5,
 
     end_time = time.clock()
     # end-snippet-2
-    ff = file('gray_pre.save','wb')
+    ff = file(pretrain_model,'wb')
     cPickle.dump(dbn,ff,protocol=cPickle.HIGHEST_PROTOCOL)
     ff.close
     print >> sys.stderr, ('The pretraining code for file ' +
@@ -363,6 +363,8 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=5,
 
     print '... finetuning the model'
     # early-stopping parameters
+    print 'terminate'
+    return 
     patience = 4 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.    # wait this much longer when a new best is
                               # found

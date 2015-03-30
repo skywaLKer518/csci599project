@@ -8,10 +8,11 @@ def compareTwo(x,y):
 	plt.imshow(y)
 	plt.show()
 
-def compareTen(x,size):
+def compareMore(x,size,k):
 	''' given x (n by d) image, plot first k images'''
 	plt.figure(1)
-	for i in xrange(10):
-		plt.subplot(2,5,i)
-		plt.imshow(x[i,].reshape(size,size))
+	for i in xrange(k):
+		n = 210 + i
+		plt.subplot(n)
+		plt.imshow(x)
 	plt.show()
