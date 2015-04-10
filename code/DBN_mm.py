@@ -11,7 +11,8 @@ import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
-from logistic_sgd import LogisticRegression, load_data
+from logistic_sgd import LogisticRegression
+from data_preprocess import load_data
 from mlp import HiddenLayer
 from rbm import RBM
 
@@ -309,12 +310,12 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
 
     # compute number of minibatches for training, validation and testing
     n_train_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
-
+    #n_train_batches = 1
     # numpy random generator
     numpy_rng = numpy.random.RandomState(123)
     print '... building the model'
     # construct the Deep Belief Network
-    dbn = DBN(numpy_rng=numpy_rng, n_ins=56*56,
+    dbn = DBN(numpy_rng=numpy_rng, n_ins=26*56,
               hidden_layers_sizes=hidden_layers_sizes,
               n_outs=4)
 

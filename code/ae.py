@@ -11,7 +11,8 @@ import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
-from logistic_sgd import LogisticRegression, load_data
+from logistic_sgd import LogisticRegression
+from data_preprocess import load_data
 from DBN import DBN
 from mlp import HiddenLayer
 #from rbm import RBM
@@ -19,7 +20,7 @@ from mlp import HiddenLayer
 class AutoEncoder(object):
 	""" AutoEncoder to do dimension reduction
 	"""
-	def __init__(self,input,numpy_rng,rbm_layers=None,n_layers=None,theano_rng=None, n_ins=3136, n_outs=3136):
+	def __init__(self,input,numpy_rng,rbm_layers=None,n_layers=None,theano_rng=None, n_ins=26*56, n_outs=26*56):
 		self.hidden_layers = []
 		self.params = []
 		self.n_layers = n_layers * 2
@@ -180,7 +181,7 @@ class AutoEncoder(object):
 
 		return train_fn, valid_score, test_score
 
-def test_autoencoder(finetune_lr=0.01,momentum=0.5,training_epochs=30,dataset='grayscale.pkl.gz',batch_size=10,pretrain='gray_pre.save'):
+def test_autoencoder(finetune_lr=0.01,momentum=0.5,training_epochs=30,dataset='grayscale.pkl.gz',batch_size=10,pretrain='output/gray_pre.save',model_save='output/gray.save'):
 	"""
 	Take pre-trained models as input. Fold the network and fine-tune weights.
 	:type finetune_lr: float
@@ -193,18 +194,18 @@ def test_autoencoder(finetune_lr=0.01,momentum=0.5,training_epochs=30,dataset='g
     :param batch_size: the size of a minibatch
 	:type momentum: float
 	:param momentum
+    """
 	
-	"""
 	print 'loading data'
 	datasets = load_data(dataset)
-	
+
 	train_set_x, train_set_y = datasets[0]
 	valid_set_x, valid_set_y = datasets[1]
 	test_set_x, test_set_y = datasets[2]
+	x_mean = datasets[3]
 
 	# compute number of minibatches for training, validation and testing
 	n_train_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
-
     # numpy random generator
 	numpy_rng = numpy.random.RandomState(123)
 	
@@ -247,7 +248,7 @@ def test_autoencoder(finetune_lr=0.01,momentum=0.5,training_epochs=30,dataset='g
 	epoch = 0
 	print n_train_batches
 	print patience, patience_increase, validation_frequency, best_validation_loss	
-	while (epoch < training_epochs) and (not done_looping):
+	while (epoch < training_epochs): # and (not done_looping):
 		epoch = epoch + 1
 		for minibatch_index in xrange(n_train_batches):
 
@@ -293,6 +294,9 @@ def test_autoencoder(finetune_lr=0.01,momentum=0.5,training_epochs=30,dataset='g
 			if patience <= iter:
 				done_looping = True
 				break
+	f = file(model_save,'wb')
+	cPickle.dump(bb,f,protocol=cPickle.HIGHEST_PROTOCOL)
+	f.close()
 	return bb
 if __name__=='__main__':
 	test_autoencoder()
