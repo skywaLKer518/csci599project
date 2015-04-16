@@ -57,28 +57,35 @@ def load_data(dataset):
     #numpy.ndarray of 1 dimensions (vector)) that have the same length as
     #the number of rows in the input. It should give the target
     #target to the example with the same index in the input.
-    x1,y1 = train_set
+
+    # crop the image to only remain table part.
+    start_ind = 21 * 56
+    end_ind = 47 * 56
+    x1, y1 = train_set
     x1 = np.array(x1)
     x_mean = x1.mean(0)
-    x1 = x1 - np.tile(x_mean,(x1.shape[0],1))
-    x1 = x1[:,21*56:47*56]
-    y1 = list(np.array(y1) - 1)
-    print x1.shape
-    train_set = list(x1),y1
-    print x_mean
-    x2,y2 = valid_set 
-    x2 = np.array(x2)
-    x2 = x2 - np.tile(x_mean,(x2.shape[0],1))
-    x2 = x2[:,21*56:56*47]
-    y2 = list(np.array(y2) - 1)
-    valid_set = list(x2),y2
 
-    x3,y3 = test_set
+    # x1 = x1 - np.tile(x_mean,(x1.shape[0], 1))
+    x1 = x1[0:10,start_ind:end_ind]
+    y1 = list(np.array(y1) - 1)
+
+    print x1.shape
+    train_set = list(x1), y1
+    print x_mean
+    x2, y2 = valid_set
+    x2 = np.array(x2)
+    # x2 = x2 - np.tile(x_mean,(x2.shape[0],1))
+    x2 = x2[:, start_ind:end_ind]
+    y2 = list(np.array(y2) - 1)
+    valid_set = list(x2), y2
+
+    x3, y3 = test_set
     x3 = np.array(x3)
-    x3 = x3 - np.tile(x_mean,(x3.shape[0],1))
-    x3 = x3[:,21*56:56*47]
+    # x3 = x3 - np.tile(x_mean,(x3.shape[0],1))
+    x3 = x3[:,start_ind:end_ind]
     y3 = list(np.array(y3) - 1)
-    test_set = list(x3),y3
+    test_set = list(x3), y3
+    x_mean = x_mean[start_ind:end_ind]
 
     def shared_dataset(data_xy, borrow=True):
         """ Function that loads the dataset into shared variables

@@ -20,27 +20,32 @@ from mlp import HiddenLayer
 class AutoEncoder(object):
     """ AutoEncoder to do dimension reduction
     """
-    def __init__(self,input,numpy_rng,rbm_layers=None,n_layers=None,theano_rng=None, n_ins=26*56, n_outs=4):
+    def __init__(self,input,numpy_rng,rbm_layers=None, n_layers=None,
+                 theano_rng=None, n_ins=26*56, n_outs=4):
         self.hidden_layers = []
         self.params = []
         self.n_layers = n_layers * 2
 
+        print self.n_layers
+
         assert self.n_layers > 0
         self.rbm_layers = rbm_layers # for debug...
         if not theano_rng:
-            theano_rng = RandomStreams(numpy_rng.randint(2 **30))
+            theano_rng = RandomStreams(numpy_rng.randint(2 ** 30))
+
         # allocate symbolic variables for the data
         if input is not None:
             self.x, self.y = input
         else:
             self.x = T.matrix('x')
             self.y = T.ivector('y')
+
         for i in xrange(self.n_layers):
             # construct mlp layers
             if i == 0:
                 input_size = n_ins
                 output_size = self.rbm_layers[0].n_hidden
-                input_W = theano.shared(
+                input_w = theano.shared(
                         value=self.rbm_layers[0].W.get_value(),
                         name='W',
                         borrow=True
@@ -54,7 +59,7 @@ class AutoEncoder(object):
                 if i + 1 <= n_layers:
                     input_size = self.rbm_layers[i].n_visible
                     output_size = self.rbm_layers[i].n_hidden
-                    input_W = theano.shared(
+                    input_w = theano.shared(
                         value=self.rbm_layers[i].W.get_value(),
                         name='W',
                         borrow=True
@@ -68,7 +73,7 @@ class AutoEncoder(object):
                     i_ind = self.n_layers-1-i
                     input_size = self.rbm_layers[i_ind].n_hidden
                     output_size = self.rbm_layers[i_ind].n_visible
-                    input_W = theano.shared(
+                    input_w = theano.shared(
                         value=self.rbm_layers[i_ind].W.get_value().T,
                         name='W',
                         borrow=True
@@ -90,15 +95,16 @@ class AutoEncoder(object):
                                     input=layer_input,
                                     n_in=input_size,
                                     n_out=output_size,
-                                    W=input_W,
+                                    W=input_w,
                                     b=input_b,
                                     activation=T.nnet.sigmoid)
+
             self.hidden_layers.append(hidden_layer)
             self.params.extend(hidden_layer.params)
 
         self.logLayer = LogisticRegression(
-            input=self.hidden_layers[n_layers-1].output,
-            n_in=self.rbm_layers[n_layers-1].n_hidden,
+            input=self.hidden_layers[n_layers - 1].output,
+            n_in=self.rbm_layers[n_layers - 1].n_hidden,
             n_out=n_outs
         )
         self.params.extend(self.logLayer.params)
@@ -111,6 +117,7 @@ class AutoEncoder(object):
         for i in xrange(self.n_layers/2):
             out = T.nnet.sigmoid(T.dot(out,self.hidden_layers[i].W)+self.hidden_layers[i].b)
         return out
+
     def reconstruct(self,x_in):
         if x_in is None:
             x_in = self.x
@@ -118,21 +125,23 @@ class AutoEncoder(object):
         for i in xrange(self.n_layers):
             out = T.nnet.sigmoid(T.dot(out,self.hidden_layers[i].W)+self.hidden_layers[i].b)
         return out
-    def get_rec_cost(self,x_rec):
-        #print T.mean(((self.x-x_rec)**2)).shape.eval()
-        return T.mean(((self.x-x_rec)**2))
-        #return T.mean([2,2])
-        #return T.mean(((self.x - x_rec)**2).sum(axis=1))
-    def auto_encoder_cost(self,lambda_supervise = 1):
+
+    def get_rec_cost(self, x_rec):
+        # print T.mean(((self.x-x_rec)**2)).shape.eval()
+        return T.mean(((self.x - x_rec) ** 2))
+        # return T.mean([2,2])
+        # return T.mean(((self.x - x_rec)**2).sum(axis=1))
+
+    def auto_encoder_cost(self, lambda_supervise=1):
         return self.get_rec_cost(self.x_rec) + lambda_supervise * self.logLayer.negative_log_likelihood(self.y)
         # print self.hidden_layers[-1].output.shape.eval()
         # return self.get_rec_cost(self.hidden_layers[-1].output)
         # return self.get_rec_cost(self.x)
 
     def build_finetune_functions(self,datasets,batch_size,learning_rate,
-            lambda_supervise=1,momentum=0):
+            lambda_supervise=1,momentum=0.1):
         (train_set_x, train_set_y) = datasets[0]
-        (valid_set_x, valid_set_y) = datasets[1]
+        (valid_set_x, valid_set_y) = datasets[0]
         (test_set_x, test_set_y) = datasets[2]
 
         # compute number of minibatches for training, validation and testing
@@ -141,14 +150,17 @@ class AutoEncoder(object):
         n_test_batches = test_set_x.get_value(borrow=True).shape[0]
         n_test_batches /= batch_size
 
+        print n_valid_batches
+        print n_test_batches
+
         index = T.lscalar('index')  # index to a [mini]batch
 
         # compute the gradient
         cost = self.auto_encoder_cost()
-        gparams = T.grad(cost,self.params)
+        gparams = T.grad(cost, self.params)
         updates = []
         for param, gparam in zip(self.params,gparams):
-            updates.append((param,param-gparam*learning_rate))
+            updates.append((param, param - gparam * learning_rate))
 
         train_fn = theano.function(
             inputs=[index],
@@ -270,7 +282,9 @@ class AutoEncoder(object):
 
         return train_fn, valid_score, test_score, valid_score1, valid_score2, valid_score3, test_score1, test_score2
 
-def test_autoencoder(finetune_lr=0.01,momentum=0.5, lambda1=1, training_epochs=30,dataset='grayscale.pkl.gz',batch_size=10,pretrain='output/gray_pre.save',model_save='output/gray.save'):
+def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=30,
+                     dataset='grayscale.pkl.gz', batch_size=10,
+                     pretrain='output/gray_pre.save', model_save='output/gray.save'):
     """
     Take pre-trained models as input. Fold the network and fine-tune weights.
     :type finetune_lr: float
@@ -290,23 +304,26 @@ def test_autoencoder(finetune_lr=0.01,momentum=0.5, lambda1=1, training_epochs=3
     datasets = load_data(dataset)
 
     train_set_x, train_set_y = datasets[0]
-    valid_set_x, valid_set_y = datasets[1]
+    valid_set_x, valid_set_y = datasets[0]
     test_set_x, test_set_y = datasets[2]
     x_mean = datasets[3]
 
     # compute number of minibatches for training, validation and testing
     n_train_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
+
     # numpy random generator
     numpy_rng = numpy.random.RandomState(123)
 
     # load trained model
     print 'loading the model'
-    f = file(pretrain,'rb')
+    f = file(pretrain, 'rb')
     s_rbm = cPickle.load(f)
     f.close()
-    s_rbm.rbm_layers
+    # s_rbm.rbm_layers
     n_layers_rbm = s_rbm.n_layers
-    bb = AutoEncoder(None, numpy_rng,s_rbm.rbm_layers,n_layers_rbm)
+    print n_layers_rbm
+
+    bb = AutoEncoder(None, numpy_rng, s_rbm.rbm_layers, n_layers_rbm)
 
     print 'getting the fine-tuning functions'
     train_fn, validate_model, test_model, v_m1, v_m2, v_m3, t_m1, t_m2 = bb.build_finetune_functions(
@@ -338,14 +355,18 @@ def test_autoencoder(finetune_lr=0.01,momentum=0.5, lambda1=1, training_epochs=3
     epoch = 0
     print n_train_batches
     print patience, patience_increase, validation_frequency, best_validation_loss
-    while (epoch < training_epochs): # and (not done_looping):
-        epoch = epoch + 1
+
+    while epoch < training_epochs: # and (not done_looping):
+        epoch += 1
         for minibatch_index in xrange(n_train_batches):
 
             minibatch_avg_cost = train_fn(minibatch_index)
             iter = (epoch - 1) * n_train_batches + minibatch_index
 
-            if (iter + 1) % validation_frequency == 0:
+            if epoch % 1000 == 0 and (iter + 1) % validation_frequency == 0:
+
+
+                this_train_loss = numpy.mean(minibatch_avg_cost)
 
                 validation_losses= validate_model()
                 validation_rec_error = v_m1()
@@ -356,11 +377,12 @@ def test_autoencoder(finetune_lr=0.01,momentum=0.5, lambda1=1, training_epochs=3
                 this_validation_error = numpy.mean(validation_error)
                 this_validation_neglog = numpy.mean(validation_neglog)
                 print(
-                        'epoch %i, minibatch %i/%i, validation loss %f (rec_error: %f, pred neg log: %f pred_error: %f)'
+                        'epoch %i, minibatch %i/%i, train loss %f validation loss %f (rec_error: %f, pred neg log: %f pred_error: %f)'
                     % (
                         epoch,
                         minibatch_index + 1,
                         n_train_batches,
+                        this_train_loss,
                         this_validation_loss,
                         this_validation_rec_error,
                         this_validation_neglog,
@@ -392,7 +414,7 @@ def test_autoencoder(finetune_lr=0.01,momentum=0.5, lambda1=1, training_epochs=3
 
             if patience <= iter:
                 done_looping = True
-                break
+                # break
     f = file(model_save,'wb')
     cPickle.dump(bb,f,protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
