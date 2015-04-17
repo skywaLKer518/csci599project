@@ -304,7 +304,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
     datasets = load_data(dataset)
 
     train_set_x, train_set_y = datasets[0]
-    valid_set_x, valid_set_y = datasets[0]
+    valid_set_x, valid_set_y = datasets[1]
     test_set_x, test_set_y = datasets[2]
     x_mean = datasets[3]
 
@@ -363,7 +363,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
             minibatch_avg_cost = train_fn(minibatch_index)
             iter = (epoch - 1) * n_train_batches + minibatch_index
 
-            if epoch % 1000 == 0 and (iter + 1) % validation_frequency == 0:
+            if  (iter + 1) % validation_frequency == 0:
 
 
                 this_train_loss = numpy.mean(minibatch_avg_cost)

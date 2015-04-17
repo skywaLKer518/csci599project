@@ -66,7 +66,7 @@ def load_data(dataset):
     x_mean = x1.mean(0)
 
     # x1 = x1 - np.tile(x_mean,(x1.shape[0], 1))
-    x1 = x1[0:10,start_ind:end_ind]
+    x1 = x1[:, start_ind:end_ind]
     y1 = list(np.array(y1) - 1)
 
     print x1.shape
