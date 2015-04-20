@@ -3,9 +3,9 @@ from DBN_mm import *
 import numpy as np
 
 
-HIDDEN = np.array([[300], [1000], [2000], [3000], [5000], [10000]]) # np.array([[400]]) #
+HIDDEN = np.array([[300], [1000], [2000], [3000], [5000], [10000]], dtype='float32')  # np.array([[400]])
 
-PRE_LR = np.array([0.001, 0.005, 0.008, 0.01, 0.05, 0.1, 0.5, 1]) # np.array([0.01]) #
+PRE_LR = np.array([0.001, 0.005, 0.008, 0.01, 0.05, 0.1, 0.5, 1], dtype='float32')  # np.array([0.01]) #
 PRE_T = np.array([20])
 PRE_MBS = np.array([50])
 
@@ -35,9 +35,9 @@ for i1 in xrange(HIDDEN.size):
                 file_log = 'log/pre_' + 'h' + str(hidden) + '_lr' \
                            + str(pre_lr) + '_t' + str(pre_t) \
                            + '_mbs' + str(pre_mbs) + '.txt'
-                file_logs= "log/details_pre_" + 'h' + str(hidden) + '_lr' \
-                           + str(pre_lr) + '_t' + str(pre_t) \
-                           + '_mbs' + str(pre_mbs) + '.txt'
+                file_logs = "log/details_pre_" + 'h' + str(hidden) + '_lr' \
+                            + str(pre_lr) + '_t' + str(pre_t) \
+                            + '_mbs' + str(pre_mbs) + '.txt'
 
                 print ("\n=== tuning... model name: %s===\n" % file_saved)
 
@@ -60,5 +60,5 @@ for i1 in xrange(HIDDEN.size):
 #
 # test_autoencoder(finetune_lr=0.1, momentum=0.5, lambda1=0, training_epochs=5,
 # dataset='grayscale.pkl.gz', batch_size=50, pretrain='output/gray_pre2.save',
-#                  model_save='output/gray2.save')
+# model_save='output/gray2.save')
 
