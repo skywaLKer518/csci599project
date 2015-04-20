@@ -69,9 +69,9 @@ def load_data(dataset):
     x1 = x1[:, start_ind:end_ind]
     y1 = list(np.array(y1) - 1)
 
-    print x1.shape
+    # print x1.shape
     train_set = list(x1), y1
-    print x_mean
+    # print x_mean
     x2, y2 = valid_set
     x2 = np.array(x2)
     # x2 = x2 - np.tile(x_mean,(x2.shape[0],1))

@@ -310,12 +310,13 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
 
     # compute number of minibatches for training, validation and testing
     n_train_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
-    #n_train_batches = 1
+
     # numpy random generator
     numpy_rng = numpy.random.RandomState(123)
+
     print '... building the model'
     # construct the Deep Belief Network
-    dbn = DBN(numpy_rng=numpy_rng, n_ins=26*56,
+    dbn = DBN(numpy_rng=numpy_rng, n_ins=26 * 56,
               hidden_layers_sizes=hidden_layers_sizes,
               n_outs=4)
 
@@ -329,6 +330,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
                                                 k=k)
 
     print '... pre-training the model'
+    best_obj = -99999999;
     start_time = time.clock()
     ## Pre-train layer-wise
     for i in xrange(dbn.n_layers):
@@ -339,8 +341,11 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
             for batch_index in xrange(n_train_batches):
                 c.append(pretraining_fns[i](index=batch_index,
                                             lr=pretrain_lr))
+            cost_e = numpy.mean(c)
             print 'Pre-training layer %i, epoch %d, cost ' % (i, epoch),
-            print numpy.mean(c)
+            print cost_e
+            if cost_e > best_obj:
+                best_obj = cost_e
 
     end_time = time.clock()
     # end-snippet-2
@@ -350,10 +355,11 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
     print >> sys.stderr, ('The pretraining code for file ' +
                           os.path.split(__file__)[1] +
                           ' ran for %.2fm' % ((end_time - start_time) / 60.))
+    print ("final pretraining cost: %f" % best_obj)
+    return best_obj
     ########################
     # FINETUNING THE MODEL #
     ########################
-	
     # get the training, validation and testing function for the model
     print '... getting the finetuning functions'
     train_fn, validate_model, test_model = dbn.build_finetune_functions(
@@ -364,8 +370,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
 
     print '... finetuning the model'
     # early-stopping parameters
-    print 'terminate'
-    return 
+
     patience = 4 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.    # wait this much longer when a new best is
                               # found

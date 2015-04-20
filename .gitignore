@@ -53,3 +53,10 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Py Other FIles
+code/.idea/*
+
+# results
+result/*
+log/*
