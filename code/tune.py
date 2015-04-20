@@ -3,10 +3,10 @@ from DBN_mm import *
 import numpy as np
 
 
-HIDDEN = np.array([[300], [1000], [2000], [3000], [5000], [10000]])
+HIDDEN = np.array([[300], [1000], [2000], [3000], [5000], [10000]]) # np.array([[400]]) #
 
-PRE_LR = np.array([0.001, 0.005, 0.008, 0.01, 0.05, 0.1, 0.5, 1])
-PRE_T = np.array([10])
+PRE_LR = np.array([0.001, 0.005, 0.008, 0.01, 0.05, 0.1, 0.5, 1]) # np.array([0.01]) #
+PRE_T = np.array([20])
 PRE_MBS = np.array([50])
 
 # FINE_LR = np.array([0.001, 0.005, 0.008, 0.01, 0.05, 0.1, 0.5, 1])
@@ -17,7 +17,7 @@ DATASET = np.array(["grayscale.pkl.gz"])
 N = HIDDEN.size * PRE_LR.size * PRE_T.size * PRE_MBS.size \
     * DATASET.size
 # * FINE_LR.size * FINE_T.size * DATASET.size
-print N
+# print N
 
 dataset = DATASET[0]
 
@@ -35,11 +35,18 @@ for i1 in xrange(HIDDEN.size):
                 file_log = 'log/pre_' + 'h' + str(hidden) + '_lr' \
                            + str(pre_lr) + '_t' + str(pre_t) \
                            + '_mbs' + str(pre_mbs) + '.txt'
+                file_logs= "log/details_pre_" + 'h' + str(hidden) + '_lr' \
+                           + str(pre_lr) + '_t' + str(pre_t) \
+                           + '_mbs' + str(pre_mbs) + '.txt'
+
+                print ("\n=== tuning... model name: %s===\n" % file_saved)
+
                 obj = test_DBN(finetune_lr=0, pretraining_epochs=pre_t,
                                pretrain_lr=pre_lr, k=1, training_epochs=0,
                                dataset=dataset, batch_size=pre_mbs,
                                hidden_layers_sizes=hidden,
-                               pretrain_model=file_saved)
+                               pretrain_model=file_saved,
+                               logfile=file_logs)
                 # output results
                 text_file = open(file_log, "w")
                 text_file.write("===pre-trained model=== \nname=%s \n" % file_saved)

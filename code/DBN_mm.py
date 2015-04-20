@@ -15,7 +15,7 @@ from logistic_sgd import LogisticRegression
 from data_preprocess import load_data
 from mlp import HiddenLayer
 from rbm import RBM
-
+from myOutput import Logger
 
 # start-snippet-1
 class DBN(object):
@@ -280,7 +280,10 @@ class DBN(object):
 
 def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
              pretrain_lr=0.001, k=1, training_epochs=1,
-             dataset='grayscale.pkl.gz', batch_size=10,hidden_layers_sizes=[1000,200,50],pretrain_model='gray_pre1.save'):
+             dataset='grayscale.pkl.gz', batch_size=10,
+             hidden_layers_sizes=[1000,200,50],
+             pretrain_model='gray_pre1.save',
+             logfile='myLog'):
     """
     Demonstrates how to train and test a Deep Belief Network.
 
@@ -301,7 +304,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
     :type batch_size: int
     :param batch_size: the size of a minibatch
     """
-
+    sys.stdout = Logger(logfile)
     datasets = load_data(dataset)
 
     train_set_x, train_set_y = datasets[0]
