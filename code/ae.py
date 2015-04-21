@@ -333,7 +333,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
 
     print >> logfile, '... fine-tuning the model'
     # early-stopping parameters
-    patience = 10 * n_train_batches  # look as this many examples regardless
+    patience = 20 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.    # wait this much longer when a new best is
                                 # found
     improvement_threshold = 0.995  # a relative improvement of this much is
@@ -413,8 +413,8 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
                 done_looping = True
                 break
     logfile.close()
-    f = file(model_save,'wb')
-    cPickle.dump(bb,f,protocol=cPickle.HIGHEST_PROTOCOL)
+    f = file(model_save, 'wb')
+    cPickle.dump(bb, f, protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
     return best_validation_loss, model_validation_error, model_rec_error
 if __name__ == '__main__':
