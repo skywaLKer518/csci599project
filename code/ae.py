@@ -295,7 +295,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
     :type momentum: float
     :param momentum
     """
-    return 1, 2, 3
+
     logfile = open(log_file, "w")
     print >> logfile, "loading data"
     datasets = load_data(dataset)
