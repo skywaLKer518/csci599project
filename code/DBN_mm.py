@@ -304,7 +304,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
     :type batch_size: int
     :param batch_size: the size of a minibatch
     """
-    sys.stdout = Logger(logfile)
+    f = open(logfile, "w")
     datasets = load_data(dataset)
 
     train_set_x, train_set_y = datasets[0]
@@ -317,7 +317,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
     # numpy random generator
     numpy_rng = numpy.random.RandomState(123)
 
-    print '... building the model'
+    print >>f, '... building the model'
     # construct the Deep Belief Network
     dbn = DBN(numpy_rng=numpy_rng, n_ins=26 * 56,
               hidden_layers_sizes=hidden_layers_sizes,
@@ -327,12 +327,12 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
     #########################
     # PRETRAINING THE MODEL #
     #########################
-    print '... getting the pretraining functions'
+    print >>f, '... getting the pretraining functions'
     pretraining_fns = dbn.pretraining_functions(train_set_x=train_set_x,
                                                 batch_size=batch_size,
                                                 k=k)
 
-    print '... pre-training the model'
+    print >>f, '... pre-training the model'
     best_obj = -99999999;
     start_time = time.clock()
     ## Pre-train layer-wise
@@ -345,8 +345,8 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
                 c.append(pretraining_fns[i](index=batch_index,
                                             lr=pretrain_lr))
             cost_e = numpy.mean(c)
-            print 'Pre-training layer %i, epoch %d, cost ' % (i, epoch),
-            print cost_e
+            print >> f, 'Pre-training layer %i, epoch %d, cost ' % (i, epoch),
+            print >> f, cost_e
             if cost_e > best_obj:
                 best_obj = cost_e
 
@@ -355,10 +355,13 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
     ff = file(pretrain_model,'wb')
     cPickle.dump(dbn,ff,protocol=cPickle.HIGHEST_PROTOCOL)
     ff.close
-    print >> sys.stderr, ('The pretraining code for file ' +
+    print >> f, ('The pretraining code for file ' +
                           os.path.split(__file__)[1] +
                           ' ran for %.2fm' % ((end_time - start_time) / 60.))
-    print ("final pretraining cost: %f" % best_obj)
+    print >> f, ("final pretraining cost: %f" % best_obj)
+    f.close()
+
+    # sys.stdout.close()
     return best_obj
     ########################
     # FINETUNING THE MODEL #
