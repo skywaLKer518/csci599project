@@ -3,10 +3,8 @@
 import os
 import sys
 import time
-
 import numpy
 import cPickle
-
 import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
@@ -26,7 +24,7 @@ class AutoEncoder(object):
         self.params = []
         self.n_layers = n_layers * 2
 
-        print self.n_layers
+        # print self.n_layers
 
         assert self.n_layers > 0
         self.rbm_layers = rbm_layers # for debug...
@@ -84,8 +82,8 @@ class AutoEncoder(object):
                         borrow=True
                     )
 
-            print ('input size for %i layer: %i'%(i, input_size))
-            print ('output size for %i layer: %i'%(i,output_size))
+            # print ('input size for %i layer: %i'%(i, input_size))
+            # print ('output size for %i layer: %i'%(i,output_size))
             if i == 0:
                 layer_input = self.x
             else:
@@ -150,8 +148,8 @@ class AutoEncoder(object):
         n_test_batches = test_set_x.get_value(borrow=True).shape[0]
         n_test_batches /= batch_size
 
-        print n_valid_batches
-        print n_test_batches
+        # print n_valid_batches
+        # print n_test_batches
 
         index = T.lscalar('index')  # index to a [mini]batch
 
@@ -257,7 +255,6 @@ class AutoEncoder(object):
             }
         )
 
-
         def valid_score():
             return [valid_score_i(i) for i in xrange(n_valid_batches)]
 
@@ -273,7 +270,6 @@ class AutoEncoder(object):
         def valid_score3():
             return [valid_score_i3(i) for i in xrange(n_valid_batches)]
 
-
         def test_score1():
             return [test_score_i1(i) for i in xrange(n_test_batches)]
 
@@ -284,7 +280,7 @@ class AutoEncoder(object):
 
 def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=30,
                      dataset='grayscale.pkl.gz', batch_size=10,
-                     pretrain='output/gray_pre.save', model_save='output/gray.save'):
+                     pretrain='output/gray_pre.save', model_save='output/gray.save', log_file="myLog"):
     """
     Take pre-trained models as input. Fold the network and fine-tune weights.
     :type finetune_lr: float
@@ -299,8 +295,9 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
     :type momentum: float
     :param momentum
     """
-
-    print 'loading data'
+    return 1, 2, 3
+    logfile = open(log_file, "w")
+    print >> logfile, "loading data"
     datasets = load_data(dataset)
 
     train_set_x, train_set_y = datasets[0]
@@ -315,17 +312,17 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
     numpy_rng = numpy.random.RandomState(123)
 
     # load trained model
-    print 'loading the model'
+    print >> logfile, 'loading the model'
     f = file(pretrain, 'rb')
     s_rbm = cPickle.load(f)
     f.close()
     # s_rbm.rbm_layers
     n_layers_rbm = s_rbm.n_layers
-    print n_layers_rbm
+    # print >> logfile, n_layers_rbm
 
     bb = AutoEncoder(None, numpy_rng, s_rbm.rbm_layers, n_layers_rbm)
 
-    print 'getting the fine-tuning functions'
+    print >> logfile, 'getting the fine-tuning functions'
     train_fn, validate_model, test_model, v_m1, v_m2, v_m3, t_m1, t_m2 = bb.build_finetune_functions(
         datasets=datasets,
         batch_size=batch_size,
@@ -334,7 +331,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
         momentum=momentum
     )
 
-    print '... fine-tuning the model'
+    print >> logfile, '... fine-tuning the model'
     # early-stopping parameters
     patience = 10 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.    # wait this much longer when a new best is
@@ -353,31 +350,30 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
 
     done_looping = False
     epoch = 0
-    print n_train_batches
-    print patience, patience_increase, validation_frequency, best_validation_loss
+    # print >> logfile, n_train_batches
+    # print >> logfile, patience, patience_increase, validation_frequency, best_validation_loss
 
-    while epoch < training_epochs: # and (not done_looping):
+    while epoch < training_epochs and (not done_looping):
         epoch += 1
         for minibatch_index in xrange(n_train_batches):
 
             minibatch_avg_cost = train_fn(minibatch_index)
             iter = (epoch - 1) * n_train_batches + minibatch_index
 
-            if  (iter + 1) % validation_frequency == 0:
-
-
+            if (iter + 1) % validation_frequency == 0:
                 this_train_loss = numpy.mean(minibatch_avg_cost)
 
-                validation_losses= validate_model()
+                validation_losses = validate_model()
                 validation_rec_error = v_m1()
                 validation_error = v_m2()
                 validation_neglog = v_m3()
+
                 this_validation_loss = numpy.mean(validation_losses)
                 this_validation_rec_error = numpy.mean(validation_rec_error)
                 this_validation_error = numpy.mean(validation_error)
                 this_validation_neglog = numpy.mean(validation_neglog)
-                print(
-                        'epoch %i, minibatch %i/%i, train loss %f validation loss %f (rec_error: %f, pred neg log: %f pred_error: %f)'
+                print >> logfile, (
+                        'epoch %i, minibatch %i/%i, train/valid loss %f / %f \n\t\t(rec_error: %f, pred neg log: %f pred_error: %f)'
                     % (
                         epoch,
                         minibatch_index + 1,
@@ -392,7 +388,6 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
 
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
-
                     #improve patience if loss improvement is good enough
                     if (
                         this_validation_loss < best_validation_loss *
@@ -402,12 +397,14 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
 
                     # save best validation score and iteration number
                     best_validation_loss = this_validation_loss
+                    model_validation_error = this_validation_error
+                    model_rec_error = this_validation_rec_error
                     best_iter = iter
 
                     # test it on the test set
                     test_losses = test_model()
                     test_score = numpy.mean(test_losses)
-                    print(('     epoch %i, minibatch %i/%i, test error of '
+                    print >> logfile, (('     epoch %i, minibatch %i/%i, test error of '
                             'best model %f ') %
                             (epoch, minibatch_index + 1, n_train_batches,
                             test_score ))
@@ -415,9 +412,10 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
             if patience <= iter:
                 done_looping = True
                 break
+    logfile.close()
     f = file(model_save,'wb')
     cPickle.dump(bb,f,protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
-    return bb
-if __name__=='__main__':
+    return best_validation_loss, model_validation_error, model_rec_error
+if __name__ == '__main__':
     test_autoencoder()
