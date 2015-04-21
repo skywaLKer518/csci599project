@@ -3,9 +3,9 @@ from DBN_mm import *
 import numpy as np
 import sys
 
-HIDDEN = np.array([[300], [1000]]) #   , [2000], [3000], [5000], [10000]])  # np.array([[400]])
+HIDDEN = np.array([[300], [1000], [2000], [3000], [5000], [10000]])  # np.array([[400]])
 
-PRE_LR = np.array([0.001] ) # , 0.005, 0.008, 0.01, 0.05, 0.1, 0.5, 1], dtype='float32')  # np.array([0.01]) #
+PRE_LR = np.array([0.001, 0.005, 0.008, 0.01, 0.05, 0.1, 0.5], dtype='float32')  # np.array([0.01]) #
 PRE_T = np.array([20])
 PRE_MBS = np.array([50])
 

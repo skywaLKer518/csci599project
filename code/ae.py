@@ -414,7 +414,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
 
             if patience <= iter:
                 done_looping = True
-                # break
+                break
     f = file(model_save,'wb')
     cPickle.dump(bb,f,protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
