@@ -47,7 +47,9 @@ def dir_to_dataset(label, type):
         url_rgb = urlopen("http://www-clmc.usc.edu/~bharath/nips_data/seg_" + str(label) + "/rgb_image_" + str(i) + ".png")
         if url_rgb.headers.maintype == 'image':
             img_rgb = Image.open(StringIO(url_rgb.read()))
+            img_rgb = img_rgb.resize((64, 48), Image.ANTIALIAS)
             img_depth = Image.open(StringIO(urlopen("http://www-clmc.usc.edu/~bharath/nips_data/seg_" +  str(label) + "/depth_image_" + str(i) + ".png").read()))
+            img_depth = img_depth.resize((64, 48), Image.ANTIALIAS)
             pixels_depth = list(img_depth.getdata())
             if type == "rgb":
                 pixels = list(img_rgb.getdata())
