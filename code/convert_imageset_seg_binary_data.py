@@ -57,8 +57,11 @@ def dir_to_dataset(label, type, folder_name):
             if url_rgb.headers.maintype == 'image':
                 img_rgb = Image.open(StringIO(url_rgb.read()))
                 img_rgb = img_rgb.resize((64, 48), Image.ANTIALIAS)
-                print("seg " + str(num_seg) + " image " + str(i))
-                img_depth = Image.open(StringIO(urlopen("http://www-clmc.usc.edu/~bharath/nips_data/binary_data/" + folder_name + "/seg_" + str(num_seg) + "/depth_image_" + str(i) + ".png").read()))
+                url_depth = urlopen("http://www-clmc.usc.edu/~bharath/nips_data/binary_data/" + folder_name + "/seg_" + str(num_seg) + "/depth_image_" + str(i) + ".png")
+                if url_depth.headers.maintype != 'image':
+                    print(folder_name + " seg " + str(num_seg) + " depth image " + str(i) + " is not presented while rgb image is presented")
+                    continue
+                img_depth = Image.open(StringIO(url_depth.read()))
                 img_depth = img_depth.resize((64, 48), Image.ANTIALIAS)
                 pixels_depth = list(img_depth.getdata())
                 if type == "rgb":
