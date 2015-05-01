@@ -59,15 +59,15 @@ def load_data(dataset):
     #target to the example with the same index in the input.
 
     # crop the image to only remain table part.
-    start_ind = 21 * 56
-    end_ind = 47 * 56
+    start_ind = 0
+    end_ind = 48 * 64
     x1, y1 = train_set
     x1 = np.array(x1)
     x_mean = x1.mean(0)
-
+    y_min = np.array(y1).min()
     # x1 = x1 - np.tile(x_mean,(x1.shape[0], 1))
     x1 = x1[:, start_ind:end_ind]
-    y1 = list(np.array(y1) - 1)
+    y1 = list(np.array(y1) - y_min)
 
     # print x1.shape
     train_set = list(x1), y1
@@ -76,16 +76,16 @@ def load_data(dataset):
     x2 = np.array(x2)
     # x2 = x2 - np.tile(x_mean,(x2.shape[0],1))
     x2 = x2[:, start_ind:end_ind]
-    y2 = list(np.array(y2) - 1)
+    y2 = list(np.array(y2) - y_min)
     valid_set = list(x2), y2
 
     x3, y3 = test_set
     x3 = np.array(x3)
     # x3 = x3 - np.tile(x_mean,(x3.shape[0],1))
     x3 = x3[:,start_ind:end_ind]
-    y3 = list(np.array(y3) - 1)
+    y3 = list(np.array(y3) - y_min)
     test_set = list(x3), y3
-    x_mean = x_mean[start_ind:end_ind]
+    # x_mean = x_mean[start_ind:end_ind]
 
     def shared_dataset(data_xy, borrow=True):
         """ Function that loads the dataset into shared variables
