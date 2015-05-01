@@ -1,26 +1,27 @@
 from ae import *
 import numpy as np
 
-HIDDEN = np.array([[300], [1000], [2000], [3000], [5000], [10000]])
+HIDDEN = np.array([[100], [500], [1000], [2000]])
 
 # PRE_LR = np.array([0.001, 0.005, 0.008, 0.01, 0.05, 0.1, 0.5], dtype='float32')  # np.array([0.01]) #
 # PRE_T = np.array([20])
 # PRE_MBS = np.array([50])
 
 # PRE_MODEL = np.array(["output/gray_pre3.save"])
-FINE_LR = np.array([0.0001, 0.0005, 0.001, 0.005, 0.008, 0.01, 0.05, 0.1, 0.5, 1], dtype='float32')
+FINE_LR = np.array([0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1], dtype='float32')
 FINE_T = np.array([100])  #
 FINE_MBS = np.array([50])
-LAMBDA = np.array([0, 1, 0.1, 0.01, 0.001], dtype='float32')  #
+LAMBDA = np.array([10], dtype='float32')  #
 DATASET = np.array(["grayscale_seg_binary_data.pkl.gz"])
 
 
-PRE_MODEL = {'300': 'output/pre_h[300]_lr0.001_t20_mbs50.save',
-             '1000': 'output/pre_h[1000]_lr0.008_t20_mbs50.save',
-             '2000': 'output/pre_h[2000]_lr0.05_t20_mbs50.save',
-             '3000': 'output/pre_h[3000]_lr0.05_t20_mbs50.save',
-             '5000': 'output/pre_h[5000]_lr0.05_t20_mbs50.save',
-             '10000': 'output/pre_h[10000]_lr0.05_t20_mbs50.save'}
+
+
+PRE_MODEL = {'100': 'output/pre_h[100]_lr0.1_t20_mbs50.save',
+             '1000': 'output/pre_h[1000]_lr0.5_t20_mbs50.save',
+             '2000': 'output/pre_h[2000]_lr0.5_t20_mbs50.save',
+             '500': 'output/pre_h[500]_lr0.1_t20_mbs50.save'
+             }
 
 
 N = HIDDEN.size * FINE_LR.size * FINE_T.size * FINE_MBS.size \
