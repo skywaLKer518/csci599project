@@ -79,8 +79,8 @@ def dir_to_dataset(label, type, folder_name):
 
 
 def main():
-    convert("rgb")
-    #convert("grayscale")
+    # convert("rgb")
+    convert("grayscale")
 
 if __name__=='__main__':
 	main()

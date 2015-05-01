@@ -283,7 +283,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
              dataset='grayscale.pkl.gz', batch_size=10,
              hidden_layers_sizes=[1000,200,50],
              pretrain_model='gray_pre1.save',
-             logfile='myLog'):
+             logfile='newLog'):
     """
     Demonstrates how to train and test a Deep Belief Network.
 
@@ -319,7 +319,7 @@ def test_DBN(finetune_lr=0.1, pretraining_epochs=50,
 
     print >>f, '... building the model'
     # construct the Deep Belief Network
-    dbn = DBN(numpy_rng=numpy_rng, n_ins=26 * 56,
+    dbn = DBN(numpy_rng=numpy_rng, n_ins=48 * 64,  # 26 * 56
               hidden_layers_sizes=hidden_layers_sizes,
               n_outs=4)
 

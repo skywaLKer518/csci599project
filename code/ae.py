@@ -19,7 +19,7 @@ class AutoEncoder(object):
     """ AutoEncoder to do dimension reduction
     """
     def __init__(self,input,numpy_rng,rbm_layers=None, n_layers=None,
-                 theano_rng=None, n_ins=26*56, n_outs=4):
+                 theano_rng=None, n_ins=6144, n_outs=5):  # 26*56 , 4
         self.hidden_layers = []
         self.params = []
         self.n_layers = n_layers * 2
@@ -280,7 +280,7 @@ class AutoEncoder(object):
 
 def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=30,
                      dataset='grayscale.pkl.gz', batch_size=10,
-                     pretrain='output/gray_pre.save', model_save='output/gray.save', log_file="myLog"):
+                     pretrain='output/gray_pre.save', model_save='output/gray.save', log_file="newLog2"):
     """
     Take pre-trained models as input. Fold the network and fine-tune weights.
     :type finetune_lr: float
@@ -333,7 +333,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
 
     print >> logfile, '... fine-tuning the model'
     # early-stopping parameters
-    patience = 20 * n_train_batches  # look as this many examples regardless
+    patience = 60 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.    # wait this much longer when a new best is
                                 # found
     improvement_threshold = 0.995  # a relative improvement of this much is

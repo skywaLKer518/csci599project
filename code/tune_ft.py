@@ -12,7 +12,7 @@ FINE_LR = np.array([0.0001, 0.0005, 0.001, 0.005, 0.008, 0.01, 0.05, 0.1, 0.5, 1
 FINE_T = np.array([100])  #
 FINE_MBS = np.array([50])
 LAMBDA = np.array([0, 1, 0.1, 0.01, 0.001], dtype='float32')  #
-DATASET = np.array(["grayscale.pkl.gz"])
+DATASET = np.array(["grayscale_seg_binary_data.pkl.gz"])
 
 
 PRE_MODEL = {'300': 'output/pre_h[300]_lr0.001_t20_mbs50.save',
