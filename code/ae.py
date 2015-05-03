@@ -139,10 +139,12 @@ class AutoEncoder(object):
     def build_finetune_functions(self,datasets,batch_size,learning_rate,
             lambda_supervise=1,momentum=0.1):
         (train_set_x, train_set_y) = datasets[0]
-        (valid_set_x, valid_set_y) = datasets[0]
+        (valid_set_x, valid_set_y) = datasets[1]
         (test_set_x, test_set_y) = datasets[2]
 
         # compute number of minibatches for training, validation and testing
+        n_train_batches = train_set_x.get_value(borrow=True).shape[0]
+        n_train_batches /= batch_size
         n_valid_batches = valid_set_x.get_value(borrow=True).shape[0]
         n_valid_batches /= batch_size
         n_test_batches = test_set_x.get_value(borrow=True).shape[0]
@@ -174,6 +176,18 @@ class AutoEncoder(object):
             }
         )
 
+        train_score_i2 = theano.function(
+            [index],
+            self.logLayer.errors(self.y),
+            givens={
+                self.x: train_set_x[
+                    index * batch_size: (index + 1) * batch_size
+                ],
+                self.y: train_set_y[
+                    index * batch_size: (index + 1) * batch_size
+                ]
+            }
+        )
         test_score_i = theano.function(
             [index],
             outputs= self.auto_encoder_cost(lambda_supervise),
@@ -255,19 +269,22 @@ class AutoEncoder(object):
             }
         )
 
-        def valid_score():
+        def train_score2():
+            return [train_score_i2(i) for i in xrange(n_train_batches)]
+
+        def valid_score():  # total loss
             return [valid_score_i(i) for i in xrange(n_valid_batches)]
 
         def test_score():
             return [test_score_i(i) for i in xrange(n_test_batches)]
 
-        def valid_score1():
+        def valid_score1():  # rec
             return [valid_score_i1(i) for i in xrange(n_valid_batches)]
 
-        def valid_score2():
+        def valid_score2():  # error
             return [valid_score_i2(i) for i in xrange(n_valid_batches)]
 
-        def valid_score3():
+        def valid_score3():  # neg log likelihood
             return [valid_score_i3(i) for i in xrange(n_valid_batches)]
 
         def test_score1():
@@ -276,7 +293,8 @@ class AutoEncoder(object):
         def test_score2():
             return [test_score_i2(i) for i in xrange(n_test_batches)]
 
-        return train_fn, valid_score, test_score, valid_score1, valid_score2, valid_score3, test_score1, test_score2
+        return train_fn, valid_score, test_score, valid_score1, valid_score2,\
+               valid_score3, test_score1, test_score2, train_score2
 
 def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=30,
                      dataset='grayscale.pkl.gz', batch_size=10,
@@ -323,7 +341,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
     bb = AutoEncoder(None, numpy_rng, s_rbm.rbm_layers, n_layers_rbm)
 
     print >> logfile, 'getting the fine-tuning functions'
-    train_fn, validate_model, test_model, v_m1, v_m2, v_m3, t_m1, t_m2 = bb.build_finetune_functions(
+    train_fn, validate_model, test_model, v_m1, v_m2, v_m3, t_m1, t_m2, tr_m2 = bb.build_finetune_functions(
         datasets=datasets,
         batch_size=batch_size,
         learning_rate=finetune_lr,
@@ -333,7 +351,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
 
     print >> logfile, '... fine-tuning the model'
     # early-stopping parameters
-    patience = 60 * n_train_batches  # look as this many examples regardless
+    patience = 50 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.    # wait this much longer when a new best is
                                 # found
     improvement_threshold = 0.995  # a relative improvement of this much is
@@ -402,12 +420,17 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
                     best_iter = iter
 
                     # test it on the test set
-                    test_losses = test_model()
-                    test_score = numpy.mean(test_losses)
-                    print >> logfile, (('     epoch %i, minibatch %i/%i, test error of '
-                            'best model %f ') %
+                    test_err = t_m2()
+                    test_error = numpy.mean(test_err)
+
+                    # and on the train set
+                    train_err = tr_m2()
+                    train_error = numpy.mean(train_err)
+
+                    print >> logfile, (('     epoch %i, minibatch %i/%i, train/test error of '
+                            'best model %f/%f ') %
                             (epoch, minibatch_index + 1, n_train_batches,
-                            test_score ))
+                            train_error, test_error))
 
             if patience <= iter:
                 done_looping = True
