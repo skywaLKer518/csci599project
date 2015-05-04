@@ -12,7 +12,7 @@ FINE_LR = np.array([0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1], dtyp
 FINE_T = np.array([100])  #
 FINE_MBS = np.array([50])
 LAMBDA = np.array([10], dtype='float32')  #
-DATASET = np.array(["grayscale_seg_binary_data.pkl.gz"])
+DATASET = np.array(["grayscale_seg_binary_data2.pkl.gz"])
 
 
 

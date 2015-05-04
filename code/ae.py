@@ -338,7 +338,7 @@ def test_autoencoder(finetune_lr=0.05, momentum=0.5, lambda1=1, training_epochs=
     n_layers_rbm = s_rbm.n_layers
     # print >> logfile, n_layers_rbm
 
-    bb = AutoEncoder(None, numpy_rng, s_rbm.rbm_layers, n_layers_rbm)
+    bb = AutoEncoder(None, numpy_rng, s_rbm.rbm_layers, n_layers_rbm, n_outs=numpy.array(train_set_y.eval()).max() + 1)
 
     print >> logfile, 'getting the fine-tuning functions'
     train_fn, validate_model, test_model, v_m1, v_m2, v_m3, t_m1, t_m2, tr_m2 = bb.build_finetune_functions(
