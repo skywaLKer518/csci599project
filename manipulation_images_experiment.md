@@ -32,6 +32,7 @@ network architecture: one layer hidden neural nets.
 ### reconstruction 
 
 on **validation** set, the orginal images and reconstructed images are as follows,
+(with hidden layer size 100)
 
 ![Alt text](rec/orig_va1.png =300x)
 ![Alt text](rec/rec_va1.png =300x)
