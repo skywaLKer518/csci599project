@@ -28,6 +28,18 @@ network architecture: one layer hidden neural nets.
 | hidden = 1000 | 39.09  | 41.33 |40.00|
 | hidden = 2000 | 37.45 | **40.67** |40.00|
 
+#### with depth information
+logistic regression results
+
+
+| class | train | valid | test|
+| ------------ | ------------- | ------------ |------------ |
+| 3 (gray+depth)| -   | **54.67** |60.67|
+| 2 (gray+depth)| -  | 41.33 | 40.00|
+| 3 (rgb+depth) | -  | **54.00** | 62.00|
+| 2 (rgb+depth)) | -  | 41.33 |40.00|
+
+
 
 ### reconstruction 
 
